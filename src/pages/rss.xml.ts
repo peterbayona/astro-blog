@@ -1,6 +1,10 @@
 import rss from "@astrojs/rss";
 import type { APIRoute } from "astro";
 import { getCollection } from "astro:content";
+import MarkdownIt from "markdown-it";
+import sanitizeHtml from "sanitize-html";
+
+const parser = new MarkdownIt();
 
 export const GET: APIRoute = async ({ params, request, site }) => {
   const blogPosts = await getCollection("blog");
@@ -19,13 +23,26 @@ export const GET: APIRoute = async ({ params, request, site }) => {
       title: data.title,
       pubDate: data.date,
       description: data.description,
+      xmlns: {
+        media: 'http://search.yahoo.com/mrss/',
+      },
       // Compute RSS link from post `slug`
       // This example assumes all posts are rendered as `/.posts/[slug].html` routes
       // NOTE: Glob imports always return `start` as a pathname, like `file.pathname`.
       //       You can set `baseURL` option in rss options to change this behavior
       //       and remove first `/` in the `link` array below
       link: `/blog/${slug}/`,
+      content: sanitizeHtml(parser.render(body), {
+        allowedTags: sanitizeHtml.defaults.allowedTags.concat(["img"]),
+      }),
 
+      customData: `<media:content
+          type="image/${data.image.format === "jpg" ? "jpeg" : "png"}"
+          width="${data.image.width}"
+          height="${data.image.height}"
+          medium="image"
+          url="${site + data.image.src}" />
+      `,
     })),
     // (optional) inject custom xml
     customData: `<language>es-es</language>`,
