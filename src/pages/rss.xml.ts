@@ -19,7 +19,7 @@ export const GET: APIRoute = async ({ params, request, site }) => {
     site: site ?? "",
     // Array of `<item>`s in output xml
     // See "Generating items" section for examples using content collections and glob imports
-    items: blogPosts.map(({ data, slug }) => ({
+    items: blogPosts.map(({ data, slug, body }) => ({
       title: data.title,
       pubDate: data.date,
       description: data.description,
